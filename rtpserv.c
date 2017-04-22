@@ -1,21 +1,4 @@
-/*******
- * 
- * FILE INFO:
- * project:	udpserv
- * file:	udpserv.c
- * started on:	05/01/03 15:14:26
- * started by:	Julien Dupasquier <jdupasquier@wanadoo.fr>
- * 
- * 
- * TODO:
- * 
- * BUGS:
- * 
- * UPDATE INFO:
- * updated on:	05/15/03 16:18:24
- * updated by:	Julien Dupasquier <jdupasquier@wanadoo.fr>
- * 
- *******/
+//rtp server side code for voip phone
 
 #include		<sys/types.h>
 #include		<sys/socket.h>
@@ -36,7 +19,7 @@
 #include 		"Macros.h"
 #include 		"Proto.h"
 
-#include		"Rtp_Exemple_Receive.h"
+#include		"Rtpserv.h"
 
 
 #include <netinet/in.h>
@@ -71,9 +54,6 @@ volatile sig_atomic_t keep_going = 1;
 
 #define MAXDATASIZE 1024 // max number of bytes we can get at once 
 
-
-// FONCTIONS Local@udpserv.c
-
 static void		us_serve(struct us *,int ac,char **av);
 static void		us_conf(struct us *);
 static int		us_start(struct us *);
@@ -107,7 +87,7 @@ void my_handler_for_sigint(int signumber)//handler for CTRL+C SIGINT
 }
 
 
-void			Print_context(char *msg, int len, int cid)
+void			Print_context(char *msg, int len, int cid)//function that prints context
 {
   int			i;
 
@@ -135,7 +115,7 @@ void			Print_context(char *msg, int len, int cid)
 }
 
 
-void			print_hdr(rtp_pkt *pkt)
+void			print_hdr(rtp_pkt *pkt)//print header and payload
 {
   /*printf("Header du message :\n");
 
@@ -237,16 +217,12 @@ struct us		*us_init(int ac, char **av)
   struct us		*us;
 
   MEM_ALLOC(us);
-  /*
-   * eventuellement il faudrait faire une liste de listeners a partir
-   * d'un fichier de conf.
-   */
-  us_conf(us); /* XXX ne sert a rien */
+   us_conf(us); 
   (void)us_start(us);
   return (us);
 }
 
-void			us_event(struct us *us, int cid, int *len,int ac, char **av)
+void			us_event(struct us *us, int cid, int *len,int ac, char **av)//function that receives rtp packets
 {
   char			msg[MAX_PACKET_LEN];
   t_listener		*srv;
@@ -260,23 +236,22 @@ void			us_event(struct us *us, int cid, int *len,int ac, char **av)
     pa_simple *s1 = NULL;
   
     int error;
+     int fd;
 
-    int fd;
-
-   
-
- if (!(s1 = pa_simple_new(NULL, av, PA_STREAM_PLAYBACK, NULL, "playback", &ss, NULL, NULL, &error))) {
+  
+ if (!(s1 = pa_simple_new(NULL, av[0], PA_STREAM_PLAYBACK, NULL, "playback", &ss, NULL, NULL, &error))) {//create a stream
         fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(error));
         goto finish;
     }
+
 unsigned char buf[BUFSIZE];
 short buf2[BUFSIZE];
   srv = us->listeners;
   client = srv->clients;
   if (FD_ISSET(srv->fd, &(us->fdset)))
     {
-      /* un nouveau message est arrive */
-      RTP_Receive(cid, srv->fd, msg, len, client->add);
+     
+      RTP_Receive(cid, srv->fd, msg, len, client->add);//receive
 	
       for(int i=0;i<BUFSIZE;i++)
 	{buf[i]=msg[i];
@@ -353,15 +328,15 @@ struct itimerspec new_value;
       switch (select(max, &us->fdset, NULL, NULL, NULL))
 	{
 	case -1:
-	  if (errno != EINTR) /* le interupted par system call c'est pas grave */
+	  if (errno != EINTR) 
 	    {
 	      perror("select");
 	      exit (EXIT_FAILURE);
 	    }
 	  break;
 	case 0:
-	  perror("j'y comprends rien");
-	  /* si il y a un timeout c'est possible, sinon non */
+	  perror("error");
+	 
 	  exit (EXIT_FAILURE);
 	default:
 	 {
@@ -377,13 +352,15 @@ struct itimerspec new_value;
             handle_error("read");
 
         tot_exp += exp;
-	  us_event(us, cid, &len,ac,av);
+	  us_event(us, cid, &len,ac,av);//periodically receive packets
 	}
 	}
     }
   RTP_Destroy(cid);
 }
 }
+
+
 int main(int ac, char **av)
 {
   struct us		*server;

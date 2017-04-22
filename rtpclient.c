@@ -1,3 +1,4 @@
+//rtp client side code for voip phone
 
 #include		<sys/types.h>
 #include		<sys/socket.h>
@@ -64,8 +65,8 @@ void my_handler_for_sigint(int signumber)//handler to handle SIGINT ctrl+C
     if (strcmp(ans,"Y") == 0)//terminate if Y
     {
        printf("Exiting ....Press any key\n");
-	printf("Statistics:\nno of bytes sent in 10-5 s is %lu\n",no);
-	printf("the data rate is therefore %lu Megabytes per second",no*10);
+	//printf("Statistics:\nno of bytes sent in 10-5 s is %lu\n",no);
+	//printf("the data rate is therefore %lu Megabytes per second",no*10);
         keep_going = 0;//set a variable and perform cleanup in main
 	
 	exit(0); 
@@ -137,7 +138,7 @@ int main(int argc, char *argv[])
 	Add_Extension(cid, 654321);
 	Add_CRSC(cid, 12569);
 	
-	if (!(s1 = pa_simple_new(NULL, argv[0], PA_STREAM_RECORD, NULL, "record", &ss, NULL, NULL, &error))) {
+	if (!(s1 = pa_simple_new(NULL, argv[0], PA_STREAM_RECORD, NULL, "record", &ss, NULL, NULL, &error))) {//create a stream
         fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", pa_strerror(error));
         goto finish;
     	}
@@ -174,7 +175,7 @@ fd2 = timerfd_create(CLOCK_REALTIME, 0);
 		{size_read=BUFSIZE;
 		buf2[i]=linear2alaw(buf[i]);}//encode using a law
 		t_inc = last_size_read * period;
-		RTP_Send(cid, t_inc, 0, PAYLOAD_TYPE, buf2, size_read);
+		RTP_Send(cid, t_inc, 0, PAYLOAD_TYPE, buf2, size_read);//send using RTP
 		last_size_read = size_read;
 			}
 

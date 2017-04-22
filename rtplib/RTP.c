@@ -533,7 +533,7 @@ u_int8			Get_Padding(rtp_hdr *rtp_hdr_msg, char *msg, int sz)
   u_int8		len_padding;
 
   /*
-   * Gestion du padding.
+   *padding.
    */  
   padding = (rtp_hdr_msg->flags & 0x20) >> 5;
   if (padding)
@@ -554,14 +554,14 @@ rtp_pkt			*Get_RTP_Hdr(char *msg, int  sz)
   rtp_pkt		*rtp_pkt_msg;
 
   /*
-   * Recuperation du rtp_header.
+  rtp_header.
    */
   MEM_SALLOC(rtp_hdr_msg, sizeof(rtp_hdr));
   memcpy(rtp_hdr_msg, msg, 12);
   hdr_sz = 12;
     
   /*
-   * Recuperation du csrc.
+   * csrc.
    */
   cc = (rtp_hdr_msg->flags) & 0x0f;
   if (cc)
@@ -571,9 +571,6 @@ rtp_pkt			*Get_RTP_Hdr(char *msg, int  sz)
       hdr_sz += (cc * 4);
     }
   
-  /*
-   * Recuperation de Ext_type et Ext_len, puis des Ext.
-   */
   ext = (rtp_hdr_msg->flags & 0x10) >> 4;
   if (ext)
     {
@@ -584,14 +581,10 @@ rtp_pkt			*Get_RTP_Hdr(char *msg, int  sz)
       hdr_sz += (ntohs(rtp_ext_msg->ext_len) * 4) + 4;
     }
     
-  /*
-   * Gestion du padding.
-   */
+
   len_padding = Get_Padding(rtp_hdr_msg, msg, sz);
     
-  /*
-   * Revoie du packet.
-   */
+ 
   MEM_ALLOC(rtp_pkt_msg);
   rtp_pkt_msg->RTP_header = rtp_hdr_msg;
   rtp_pkt_msg->RTP_extension = rtp_ext_msg;
@@ -604,9 +597,6 @@ rtp_pkt			*Get_RTP_Hdr(char *msg, int  sz)
 
 void			Free_Tmp_Mem(rtp_pkt *pkt)
 {
-  /*
-   * Free Memoire. 
-   */
   free(pkt->RTP_extension->hd_ext);
   free(pkt->RTP_extension);
   free(pkt->RTP_header->csrc);
@@ -689,30 +679,30 @@ int			RTP_Receive(context cid, int fd, char *payload, int *len, struct sockaddr 
   rtp_pkt		*pkt;
   
   /*
-   * Reception du paquets.
+   * Reception 
    */
   sin_len = sizeof(struct sockaddr_in);
   sz =  recvfrom(fd, buf, MAX_PACKET_LEN, 0, sin, &sin_len);
 
   /*
-   * Stockage du paquets.
+   * Stockage
    */
   MEM_SALLOC(msg, sz);
   memcpy(msg, buf, sz);
   bzero(buf,MAX_PACKET_LEN);
 
   /*
-   * Recuperation du RTP_Header, RTP_extension, Payload.
+   *RTP_Header, RTP_extension, Payload.
    */
   pkt = Get_RTP_Hdr(msg, sz);
   
   /*
-   * Integration du paquets dans le context.
+   * Integration
    */
   Put_Pkt_in_Context(pkt, msg, cid, sz);
 
   /*
-   * Gestion du payload.
+   *  payload.
    */
   *len = pkt->payload_len;
   memcpy(payload, pkt->payload, *len);
