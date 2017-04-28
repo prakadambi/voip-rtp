@@ -110,7 +110,12 @@ int main(int argc, char *argv[])
     struct timespec now;
     uint64_t exp, tot_exp;
     ssize_t s3;
-
+	
+    if (argc != 2) {//check for format of arguments
+        fprintf(stderr,"usage: server ip\n");
+        exit(1);
+    }
+	
    if (clock_gettime(CLOCK_REALTIME, &now) == -1)
         handle_error("clock_gettime");
 
@@ -131,7 +136,7 @@ int main(int argc, char *argv[])
 
 	Init_Socket();
 	RTP_Create(&cid);
-	RTP_Add_Send_Addr(cid, "127.0.0.1", UDP_PORT, 6);
+	RTP_Add_Send_Addr(cid, argv[1], UDP_PORT, 6);
 
 	Set_Extension_Profile(cid, 27);
 	Add_Extension(cid, 123456);
